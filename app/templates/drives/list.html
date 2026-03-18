@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% block title %}Drive Logs · TrackWise{% endblock %}
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2 class="h4 fw-bold mb-0">🚗 Drive Logs</h2>
+  <a href="{{ url_for('drives.add_drive') }}" class="btn btn-primary">
+    + Add Log
+  </a>
+</div>
+
+<!-- Date filter -->
+<div class="card mb-3 p-3">
+  <form method="GET" class="row g-2 align-items-end">
+    <div class="col-5">
+      <label class="form-label small mb-1">From</label>
+      <input type="date" class="form-control form-control-sm"
+             name="start_date" value="{{ start_date }}">
+    </div>
+    <div class="col-5">
+      <label class="form-label small mb-1">To</label>
+      <input type="date" class="form-control form-control-sm"
+             name="end_date" value="{{ end_date }}">
+    </div>
+    <div class="col-2">
+      <button type="submit" class="btn btn-outline-primary btn-sm w-100">Go</button>
+    </div>
+  </form>
+</div>
+
+<div class="card mb-3 p-3 bg-primary bg-opacity-10">
+  Total KMs: <strong>{{ total_km }} km</strong>
+  &nbsp;|&nbsp; Entries: <strong>{{ drives|length }}</strong>
+</div>
+
+{% if drives %}
+<div class="table-responsive">
+  <table class="table table-hover align-middle">
+    <thead class="table-light">
+      <tr>
+        <th>Date</th><th>Start KM</th><th>End KM</th>
+        <th>Distance</th><th>Purpose</th><th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for d in drives %}
+      <tr>
+        <td>{{ d.log_date }}</td>
+        <td>{{ d.start_km }}</td>
+        <td>
+          {% if d.end_km %}{{ d.end_km }}
+          {% else %}
+            <span class="badge bg-warning text-dark">⏳ Not set</span>
+          {% endif %}
+        </td>
+        <td>
+          {% if d.distance_km %}
+            <strong>{{ d.distance_km }} km</strong>
+          {% else %}
+            <a href="{{ url_for('drives.edit_drive', drive_id=d._id) }}"
+               class="btn btn-sm btn-outline-warning">Add End KM</a>
+          {% endif %}
+        </td>
+        <td>{{ d.purpose }}</td>
+        <td>
+          <a href="{{ url_for('drives.edit_drive', drive_id=d._id) }}"
+             class="btn btn-sm btn-outline-secondary">Edit</a>
+          <form method="POST"
+                action="{{ url_for('drives.delete_drive_entry', drive_id=d._id) }}"
+                class="d-inline"
+                onsubmit="return confirm('Delete this log?')">
+            <button class="btn btn-sm btn-outline-danger">Del</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="text-center text-muted py-5">
+  No drive logs yet.
+  <a href="{{ url_for('drives.add_drive') }}">Add your first one →</a>
+</div>
+{% endif %}
+{% endblock %}
