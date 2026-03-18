@@ -1,16 +1,16 @@
 {% extends 'base.html' %}
-{% block title %}Add Expense · TrackWise{% endblock %}
+{% block title %}Edit Expense · TrackWise{% endblock %}
 {% block content %}
 <div class="row justify-content-center">
  <div class="col-md-7">
   <div class="card p-4">
-    <h2 class="h4 fw-bold mb-4">💰 Add Expense</h2>
+    <h2 class="h4 fw-bold mb-4">✏️ Edit Expense</h2>
     <form method="POST" enctype="multipart/form-data">
 
       <div class="mb-3">
         <label class="form-label fw-semibold">Date *</label>
         <input type="date" class="form-control" name="expense_date"
-               value="{{ form.get('expense_date', '') }}" required>
+               value="{{ expense.expense_date }}" required>
       </div>
 
       <div class="mb-3">
@@ -19,7 +19,7 @@
           <option value="">— Select type —</option>
           {% for t in expense_types %}
           <option value="{{ t }}"
-            {{ 'selected' if form.get('expense_type') == t }}>{{ t }}</option>
+            {{ 'selected' if expense.expense_type == t }}>{{ t }}</option>
           {% endfor %}
         </select>
       </div>
@@ -27,8 +27,7 @@
       <div class="mb-3">
         <label class="form-label fw-semibold">Vendor / Store *</label>
         <input type="text" class="form-control" name="vendor"
-               placeholder="e.g. Shell King St, Costco, Tim Hortons"
-               value="{{ form.get('vendor','') }}" required>
+               value="{{ expense.vendor }}" required>
       </div>
 
       <div class="row g-3 mb-2">
@@ -37,8 +36,8 @@
           <div class="input-group">
             <span class="input-group-text">$</span>
             <input type="number" class="form-control" name="amount" id="amount"
-                   step="0.01" min="0.01" placeholder="e.g. 55.10"
-                   value="{{ form.get('amount','') }}" required>
+                   step="0.01" min="0.01"
+                   value="{{ expense.total_amount }}" required>
           </div>
           <div class="form-text">Enter the total from your receipt</div>
         </div>
@@ -47,8 +46,8 @@
           <div class="input-group">
             <span class="input-group-text">$</span>
             <input type="number" class="form-control" name="hst" id="hst"
-                   step="0.01" min="0" placeholder="0.00"
-                   value="{{ form.get('hst','') }}">
+                   step="0.01" min="0"
+                   value="{{ expense.hst }}">
           </div>
           <div class="form-text">Auto-calc 13% · edit if needed</div>
         </div>
@@ -56,28 +55,19 @@
 
       <div class="alert alert-secondary d-flex justify-content-between py-2 mb-3">
         <span class="text-muted small">Pre-tax amount:</span>
-        <strong id="pretaxDisplay">$0.00</strong>
-      </div>
-
-      <div class="mb-3">
-        <label class="form-label fw-semibold">Description</label>
-        <textarea class="form-control" name="description" rows="2"
-                  placeholder="Optional notes">{{ form.get('description','') }}</textarea>
+        <strong id="pretaxDisplay">${{ "%.2f"|format(expense.amount) }}</strong>
       </div>
 
       <div class="mb-4">
-        <label class="form-label fw-semibold">
-          Upload Receipt
-          <span class="text-muted fw-normal small">(optional)</span>
-        </label>
-        <input type="file" class="form-control" name="receipt" id="receiptInput"
-               accept="image/*,.pdf">
-        <div class="form-text">JPG, PNG, WEBP or PDF · Max 5MB</div>
-        <img id="imgPreview" class="img-thumbnail mt-2 d-none" style="max-height:150px">
+        <label class="form-label fw-semibold">Description</label>
+        <textarea class="form-control" name="description" rows="2"
+                  placeholder="Optional notes">{{ expense.description or '' }}</textarea>
       </div>
 
       <div class="d-flex gap-2">
-        <button type="submit" class="btn btn-success flex-fill">Save Expense</button>
+        <button type="submit" class="btn btn-warning flex-fill fw-semibold">
+          Save Changes
+        </button>
         <a href="{{ url_for('expenses.list_expenses') }}"
            class="btn btn-outline-secondary">Cancel</a>
       </div>
@@ -94,11 +84,9 @@ const hstEl    = document.getElementById('hst');
 const pretaxEl = document.getElementById('pretaxDisplay');
 
 function recalc() {
-  const total = parseFloat(amtEl.value) || 0;
-  const hst   = parseFloat(hstEl.value);
-  // If HST field is empty or untouched, auto-calc from total
-  const hstVal = isNaN(hst) ? Math.round(total * 0.13 / 1.13 * 100) / 100 : hst;
-  pretaxEl.textContent = '$' + Math.max(0, total - hstVal).toFixed(2);
+  const total  = parseFloat(amtEl.value) || 0;
+  const hst    = parseFloat(hstEl.value) || 0;
+  pretaxEl.textContent = '$' + Math.max(0, total - hst).toFixed(2);
 }
 amtEl.addEventListener('input', function() {
   const total = parseFloat(this.value) || 0;
@@ -106,20 +94,6 @@ amtEl.addEventListener('input', function() {
   recalc();
 });
 hstEl.addEventListener('input', recalc);
-
-document.getElementById('receiptInput').addEventListener('change', function() {
-  const f = this.files[0];
-  if (f && f.type.startsWith('image/')) {
-    const r = new FileReader();
-    r.onload = e => {
-      const img = document.getElementById('imgPreview');
-      img.src = e.target.result;
-      img.classList.remove('d-none');
-    };
-    r.readAsDataURL(f);
-  }
-});
-const df = document.querySelector('[name=expense_date]');
-if (!df.value) df.value = new Date().toISOString().split('T')[0];
+recalc(); // run on page load to show current pre-tax
 </script>
 {% endblock %}
