@@ -3,7 +3,7 @@ from bson import ObjectId
 from . import get_db
 
 EXPENSE_TYPES = [
-    'Gas', 'Water',
+    'Gas', 'Groceries', 'Water', 'Electricity',
     'Internet', 'Phone', 'Vehicle Maintenance',
     'Office Supplies', 'Meal / Dining', 'Parking',
     'Software / Subscriptions', 'Other'
