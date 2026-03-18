@@ -1,9 +1,0 @@
-__pycache__/
-*.py[cod]
-.env
-venv/
-.venv/
-app/static/uploads/
-.DS_Store
-Thumbs.db
-.pytest_cache/
