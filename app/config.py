@@ -11,5 +11,7 @@ class Config:
     ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'pdf', 'webp'}
 
 class TestConfig(Config):
-    TESTING   = True
-    MONGO_URI = 'mongodb://localhost/trackwise_test'
+    TESTING      = True
+    MONGO_URI    = 'mongodb://localhost/trackwise_test'
+    MONGO_DBNAME = 'trackwise_test'
+    MONGO_SERVER_SELECTION_TIMEOUT_MS = 1000
