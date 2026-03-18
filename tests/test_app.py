@@ -1,4 +1,5 @@
 import pytest
+from unittest.mock import patch
 from app import create_app
 from app.config import TestConfig
 
@@ -9,7 +10,10 @@ def client():
         yield c
 
 def test_dashboard_loads(client):
-    res = client.get('/')
+    # Mock both model calls so no real DB needed
+    with patch('app.routes.main.get_all_drives', return_value=[]), \
+         patch('app.routes.main.get_all_expenses', return_value=[]):
+        res = client.get('/')
     assert res.status_code == 200
 
 def test_add_drive_get(client):
@@ -24,4 +28,4 @@ def test_add_expense_get(client):
 
 def test_drive_missing_fields(client):
     res = client.post('/drives/add', data={})
-    assert res.status_code == 200   # re-renders form, no redirect
+    assert res.status_code == 200
