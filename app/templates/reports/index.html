@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+{% block title %}Reports · TrackWise{% endblock %}
+{% block content %}
+
+<h2 class="h4 fw-bold mb-4">📊 Reports</h2>
+
+<!-- Date filter + export -->
+<div class="card mb-4 p-3">
+  <form method="GET" class="row g-2 align-items-end">
+    <div class="col-12 col-sm-4">
+      <label class="form-label small fw-semibold mb-1">From</label>
+      <input type="date" class="form-control form-control-sm"
+             name="start_date" value="{{ start_date }}">
+    </div>
+    <div class="col-12 col-sm-4">
+      <label class="form-label small fw-semibold mb-1">To</label>
+      <input type="date" class="form-control form-control-sm"
+             name="end_date" value="{{ end_date }}">
+    </div>
+    <div class="col-6 col-sm-2">
+      <button type="submit" class="btn btn-primary btn-sm w-100">Apply</button>
+    </div>
+    <div class="col-6 col-sm-2">
+      <a href="{{ url_for('reports.export_excel', start_date=start_date, end_date=end_date) }}"
+         class="btn btn-success btn-sm w-100">
+        ⬇ Excel
+      </a>
+    </div>
+  </form>
+</div>
+
+<!-- Summary -->
+<div class="row g-3 mb-4">
+  <div class="col-4">
+    <div class="card text-center p-3">
+      <div class="fs-3 fw-bold text-primary">{{ total_km }}</div>
+      <div class="small text-muted">Total KMs</div>
+    </div>
+  </div>
+  <div class="col-4">
+    <div class="card text-center p-3">
+      <div class="fs-3 fw-bold text-danger">${{ total_spent }}</div>
+      <div class="small text-muted">Total Spent</div>
+    </div>
+  </div>
+  <div class="col-4">
+    <div class="card text-center p-3">
+      <div class="fs-3 fw-bold text-warning">${{ total_hst }}</div>
+      <div class="small text-muted">Total HST</div>
+    </div>
+  </div>
+</div>
+
+<!-- Monthly KM table -->
+{% if monthly_km %}
+<div class="card mb-4">
+  <div class="card-header fw-semibold bg-transparent">KMs by Month</div>
+  <div class="table-responsive">
+    <table class="table table-sm table-hover mb-0">
+      <thead class="table-light">
+        <tr><th>Year</th><th>Month</th><th>Trips</th><th>Total KM</th></tr>
+      </thead>
+      <tbody>
+        {% set months=['','Jan','Feb','Mar','Apr','May','Jun',
+                       'Jul','Aug','Sep','Oct','Nov','Dec'] %}
+        {% for row in monthly_km %}
+        <tr>
+          <td>{{ row._id.year }}</td>
+          <td>{{ months[row._id.month | int] }}</td>
+          <td>{{ row.trips }}</td>
+          <td><strong>{{ row.total_km | round(1) }} km</strong></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+
+<!-- Expenses by type -->
+{% if by_type %}
+<div class="card">
+  <div class="card-header fw-semibold bg-transparent">Expenses by Category</div>
+  <div class="table-responsive">
+    <table class="table table-sm table-hover mb-0">
+      <thead class="table-light">
+        <tr><th>Type</th><th>Count</th><th>HST</th><th>Total</th></tr>
+      </thead>
+      <tbody>
+        {% for row in by_type %}
+        <tr>
+          <td>{{ row._id }}</td>
+          <td>{{ row.count }}</td>
+          <td>${{ row.total_hst | round(2) }}</td>
+          <td><strong>${{ row.total | round(2) }}</strong></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+
+{% endblock %}
