@@ -8,9 +8,11 @@ def create_app(config_class=Config):
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
             
     from .routes.main import main_bp
-    from .routes.drives import drives_bp 
+    from .routes.drives import drives_bp
+    from .routes.expenses import expenses_bp
 
     app.register_blueprint(main_bp)
-    app.register_blueprint(drives_bp, url_prefix='/drives')        
+    app.register_blueprint(drives_bp, url_prefix='/drives')
+    app.register_blueprint(expenses_bp, url_prefix='/expenses')        
 
     return app
