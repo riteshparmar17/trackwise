@@ -1,22 +1,27 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask_login import login_required, current_user
 from app.models.drive_log import (
-    create_drive, get_all_drives, get_drive_by_id, update_drive,
-    delete_drive, PURPOSES
+    create_drive, get_all_drives, get_drive_by_id,
+    update_drive, delete_drive, PURPOSES
 )
 
 drives_bp = Blueprint('drives', __name__)
 
 @drives_bp.route('/')
+@login_required
 def list_drives():
     start  = request.args.get('start_date', '')
     end    = request.args.get('end_date', '')
-    drives = get_all_drives(start or None, end or None)
+    drives = get_all_drives(user_id=current_user.id,
+                            start_date=start or None,
+                            end_date=end or None)
     total_km = sum(d['distance_km'] for d in drives if d.get('distance_km'))
     return render_template('drives/list.html',
         drives=drives, total_km=round(total_km, 1),
         start_date=start, end_date=end)
 
 @drives_bp.route('/add', methods=['GET', 'POST'])
+@login_required
 def add_drive():
     if request.method == 'POST':
         if not request.form.get('log_date') or not request.form.get('start_km'):
@@ -29,14 +34,15 @@ def add_drive():
             flash('End KM must be greater than Start KM.', 'danger')
             return render_template('drives/add.html',
                 purposes=PURPOSES, form=request.form)
-        create_drive(request.form)
+        create_drive(request.form, current_user.id)
         flash('Drive log saved! ✅', 'success')
         return redirect(url_for('drives.list_drives'))
     return render_template('drives/add.html', purposes=PURPOSES, form={})
 
 @drives_bp.route('/edit/<drive_id>', methods=['GET', 'POST'])
+@login_required
 def edit_drive(drive_id):
-    drive = get_drive_by_id(drive_id)
+    drive = get_drive_by_id(drive_id, current_user.id)
     if not drive:
         flash('Drive log not found.', 'danger')
         return redirect(url_for('drives.list_drives'))
@@ -46,13 +52,14 @@ def edit_drive(drive_id):
             flash('End KM must be greater than Start KM.', 'danger')
             return render_template('drives/edit.html',
                 drive=drive, purposes=PURPOSES)
-        update_drive(drive_id, request.form)
+        update_drive(drive_id, request.form, current_user.id)
         flash('Drive log updated! ✅', 'success')
         return redirect(url_for('drives.list_drives'))
     return render_template('drives/edit.html', drive=drive, purposes=PURPOSES)
 
 @drives_bp.route('/delete/<drive_id>', methods=['POST'])
+@login_required
 def delete_drive_entry(drive_id):
-    delete_drive(drive_id)
+    delete_drive(drive_id, current_user.id)
     flash('Drive log deleted.', 'info')
     return redirect(url_for('drives.list_drives'))
