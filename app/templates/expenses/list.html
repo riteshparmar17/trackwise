@@ -79,9 +79,21 @@
         <td><strong>${{ "%.2f"|format(e.total_amount) }}</strong></td>
         <td>
           {% if e.receipt_file %}
-            <span class="badge bg-success">✓</span>
+            {% if e.receipt_file.endswith('.pdf') %}
+              <a href="{{ url_for('static', filename='uploads/' + e.receipt_file) }}"
+                target="_blank"
+                class="badge bg-secondary text-decoration-none">
+                PDF
+              </a>
+            {% else %}
+              <img src="{{ url_for('static', filename='uploads/' + e.receipt_file) }}"
+                  class="img-thumbnail"
+                  style="max-height:40px; cursor:pointer"
+                  onclick="showReceipt(this.src)"
+                  title="Click to view">
+            {% endif %}
           {% else %}
-            <span class="text-muted small">—</span>
+            <span class="text-muted">-</span>
           {% endif %}
         </td>
         <td>
@@ -105,5 +117,26 @@
   <a href="{{ url_for('expenses.add_expense') }}">Add your first one →</a>
 </div>
 {% endif %}
+
+<div class="modal fade" id="receiptModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header border-0">
+        <h5 class="modal-title">Receipt</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body text-center p-2">
+        <img id="receiptModalImg" src="" class="img-fluid rounded">
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function showReceipt(url) {
+  document.getElementById('receiptModalImg').src = url;
+  new bootstrap.Modal(document.getElementById('receiptModal')).show();
+}
+</script>
 
 {% endblock %}

@@ -69,13 +69,24 @@
 
       <div class="mb-4">
         <label class="form-label fw-semibold">
-          Upload Receipt
-          <span class="text-muted fw-normal small">(optional)</span>
+          Receipt <span class="text-muted fw-normal small">(optional)</span>
         </label>
-        <input type="file" class="form-control" name="receipt" id="receiptInput"
-               accept="image/*,.pdf">
-        <div class="form-text">JPG, PNG, WEBP or PDF · Max 5MB</div>
-        <img id="imgPreview" class="img-thumbnail mt-2 d-none" style="max-height:150px">
+        <div class="d-flex gap-2 mb-2">
+          <label class="btn btn-outline-secondary flex-fill text-center mb-0">
+            Take Photo
+            <input type="file" name="receipt" accept="image/*"
+                  capture="environment" class="d-none"
+                  onchange="previewReceipt(this)">
+          </label>
+          <label class="btn btn-outline-primary flex-fill text-center mb-0">
+            Upload File
+            <input type="file" name="receipt" accept="image/*,.pdf"
+                  class="d-none" onchange="previewReceipt(this)">
+          </label>
+        </div>
+        <div class="form-text mb-2">JPG, PNG, WEBP or PDF - Max 5MB</div>
+        <img id="imgPreview" class="img-thumbnail d-none" style="max-height:180px">
+        <div id="pdfLabel" class="badge bg-secondary d-none">PDF selected</div>
       </div>
 
       <div class="d-flex gap-2">
@@ -123,6 +134,25 @@ document.getElementById('receiptInput').addEventListener('change', function() {
 });
 const df = document.querySelector('[name=expense_date]');
 if (!df.value) df.value = new Date().toISOString().split('T')[0];
+
+function previewReceipt(input) {
+  const f = input.files[0];
+  if (!f) return;
+  const img = document.getElementById('imgPreview');
+  const pdf = document.getElementById('pdfLabel');
+  if (f.type.startsWith('image/')) {
+    const r = new FileReader();
+    r.onload = e => {
+      img.src = e.target.result;
+      img.classList.remove('d-none');
+    };
+    r.readAsDataURL(f);
+    pdf.classList.add('d-none');
+  } else {
+    img.classList.add('d-none');
+    pdf.classList.remove('d-none');
+  }
+}
 
 fetch('/api/vendors')
   .then(r => r.json())

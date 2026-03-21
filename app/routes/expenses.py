@@ -24,6 +24,11 @@ def save_receipt(file) -> str | None:
     file.save(os.path.join(current_app.config['UPLOAD_FOLDER'], filename))
     return filename
 
+def _delete_file(filename: str) -> None:
+    path = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
+    if os.path.exists(path):
+        os.remove(path)
+
 @expenses_bp.route('/')
 @login_required
 def list_expenses():
@@ -54,7 +59,7 @@ def add_expense():
         receipt = save_receipt(request.files.get('receipt'))
         create_expense(request.form, current_user.id, receipt)
         add_vendor(current_user.id, request.form.get('vendor', ''))
-        flash('Expense saved! ✅', 'success')
+        flash('Expense saved!', 'success')
         return redirect(url_for('expenses.list_expenses'))
     return render_template('expenses/add.html',
         expense_types=EXPENSE_TYPES, form={})
@@ -72,9 +77,18 @@ def edit_expense(expense_id):
                 flash(f'{field.replace("_"," ").title()} is required.', 'danger')
                 return render_template('expenses/edit.html',
                     expense=expense, expense_types=EXPENSE_TYPES)
-        update_expense(expense_id, request.form)
+        receipt_filename = expense.get('receipt_file')
+        if request.form.get('remove_receipt') and receipt_filename:
+            _delete_file(receipt_filename)
+            receipt_filename = None
+        new_file = request.files.get('receipt')
+        if new_file and new_file.filename:
+            if receipt_filename:
+                _delete_file(receipt_filename)
+            receipt_filename = save_receipt(new_file)
+        update_expense(expense_id, request.form, receipt_filename)
         add_vendor(current_user.id, request.form.get('vendor', ''))
-        flash('Expense updated! ✅', 'success')
+        flash('Expense updated!', 'success')
         return redirect(url_for('expenses.list_expenses'))
     return render_template('expenses/edit.html',
         expense=expense, expense_types=EXPENSE_TYPES)
