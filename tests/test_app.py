@@ -9,23 +9,28 @@ def client():
     with app.test_client() as c:
         yield c
 
-def test_dashboard_loads(client):
-    # Mock both model calls so no real DB needed
-    with patch('app.routes.main.get_all_drives', return_value=[]), \
-         patch('app.routes.main.get_all_expenses', return_value=[]):
-        res = client.get('/')
-    assert res.status_code == 200
+def test_dashboard_redirects_to_login(client):
+    # Dashboard now requires login — should redirect
+    res = client.get('/')
+    assert res.status_code == 302
+    assert '/login' in res.headers['Location']
 
-def test_add_drive_get(client):
+def test_login_page_loads(client):
+    res = client.get('/login')
+    assert res.status_code == 200
+    assert b'Login' in res.data
+
+def test_register_page_loads(client):
+    res = client.get('/register')
+    assert res.status_code == 200
+    assert b'Create' in res.data
+
+def test_add_drive_redirects_to_login(client):
     res = client.get('/drives/add')
-    assert res.status_code == 200
-    assert b'Start KM' in res.data
+    assert res.status_code == 302
+    assert '/login' in res.headers['Location']
 
-def test_add_expense_get(client):
+def test_add_expense_redirects_to_login(client):
     res = client.get('/expenses/add')
-    assert res.status_code == 200
-    assert b'Vendor' in res.data
-
-def test_drive_missing_fields(client):
-    res = client.post('/drives/add', data={})
-    assert res.status_code == 200
+    assert res.status_code == 302
+    assert '/login' in res.headers['Location']
