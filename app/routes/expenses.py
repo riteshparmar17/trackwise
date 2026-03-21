@@ -8,6 +8,7 @@ from app.models.expense import (
     create_expense, get_all_expenses, get_expense_by_id,
     update_expense, delete_expense, EXPENSE_TYPES
 )
+from app.models.vendor import add_vendor
 
 expenses_bp = Blueprint('expenses', __name__)
 
@@ -52,6 +53,7 @@ def add_expense():
                     expense_types=EXPENSE_TYPES, form=request.form)
         receipt = save_receipt(request.files.get('receipt'))
         create_expense(request.form, current_user.id, receipt)
+        add_vendor(current_user.id, request.form.get('vendor', ''))
         flash('Expense saved! ✅', 'success')
         return redirect(url_for('expenses.list_expenses'))
     return render_template('expenses/add.html',
@@ -71,6 +73,7 @@ def edit_expense(expense_id):
                 return render_template('expenses/edit.html',
                     expense=expense, expense_types=EXPENSE_TYPES)
         update_expense(expense_id, request.form)
+        add_vendor(current_user.id, request.form.get('vendor', ''))
         flash('Expense updated! ✅', 'success')
         return redirect(url_for('expenses.list_expenses'))
     return render_template('expenses/edit.html',
