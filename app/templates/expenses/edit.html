@@ -95,5 +95,18 @@ amtEl.addEventListener('input', function() {
 });
 hstEl.addEventListener('input', recalc);
 recalc(); // run on page load to show current pre-tax
+
+fetch('/api/vendors')
+  .then(r => r.json())
+  .then(vendors => {
+    const dl  = document.getElementById('vendorList');
+    const inp = document.getElementById('vendorInput');
+    vendors.forEach(v => {
+      const opt = document.createElement('option');
+      opt.value = v;
+      dl.appendChild(opt);
+    });
+    inp.setAttribute('list', 'vendorList');
+  });
 </script>
 {% endblock %}
