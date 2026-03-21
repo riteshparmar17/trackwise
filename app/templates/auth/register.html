@@ -1,0 +1,44 @@
+{% extends 'base_auth.html' %}
+{% block title %}Register · TrackWise{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+ <div class="col-md-5">
+  <div class="card p-4 shadow-sm">
+    <div class="text-center mb-4">
+      <h1 class="h3 fw-bold">🚗 TrackWise</h1>
+      <p class="text-muted">Create your free account</p>
+    </div>
+    <form method="POST">
+      <div class="mb-3">
+        <label class="form-label fw-semibold">Full Name *</label>
+        <input type="text" class="form-control" name="name"
+               value="{{ form.get('name','') }}"
+               placeholder="John Smith" required>
+      </div>
+      <div class="mb-3">
+        <label class="form-label fw-semibold">Email *</label>
+        <input type="email" class="form-control" name="email"
+               value="{{ form.get('email','') }}"
+               placeholder="you@email.com" required>
+      </div>
+      <div class="mb-3">
+        <label class="form-label fw-semibold">Password *</label>
+        <input type="password" class="form-control" name="password"
+               placeholder="Min 8 characters" minlength="8" required>
+      </div>
+      <div class="mb-4">
+        <label class="form-label fw-semibold">Confirm Password *</label>
+        <input type="password" class="form-control" name="confirm" required>
+      </div>
+      <button type="submit" class="btn btn-primary w-100 mb-3">
+        Create Account
+      </button>
+      <p class="text-center text-muted small">
+        Already have an account?
+        <a href="{{ url_for('auth.login') }}">Log in</a>
+      </p>
+    </form>
+  </div>
+ </div>
+</div>
+{% endblock %}
