@@ -5,12 +5,12 @@ from app.config import TestConfig
 
 @pytest.fixture
 def client():
-    app = create_app(TestConfig)
+    with patch('app.models.user.ensure_indexes'):
+        app = create_app(TestConfig)
     with app.test_client() as c:
         yield c
 
 def test_dashboard_redirects_to_login(client):
-    # Dashboard now requires login — should redirect
     res = client.get('/')
     assert res.status_code == 302
     assert '/login' in res.headers['Location']
