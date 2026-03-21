@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, app, render_template
 from flask_login import LoginManager
 from flask_mail import Mail
 from .config import Config
@@ -22,7 +22,7 @@ def create_app(config_class=Config):
     mail.init_app(app)
 
     # User loader
-    from .models.user import get_user_by_id, ensure_indexes
+    from .models.user import get_user_by_id, ensure_indexes as user_indexes
 
     @login_manager.user_loader
     def load_user(user_id):
@@ -34,12 +34,14 @@ def create_app(config_class=Config):
     from .routes.drives   import drives_bp
     from .routes.expenses import expenses_bp
     from .routes.reports  import reports_bp
+    from .routes.settings import settings_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(main_bp)
     app.register_blueprint(drives_bp,   url_prefix='/drives')
     app.register_blueprint(expenses_bp, url_prefix='/expenses')
     app.register_blueprint(reports_bp,  url_prefix='/reports')
+    app.register_blueprint(settings_bp)
 
     # Error pages
     @app.errorhandler(404)
@@ -52,7 +54,9 @@ def create_app(config_class=Config):
 
     with app.app_context():
         try:
-            ensure_indexes()
+            from .models.vendor import ensure_indexes as vendor_indexes
+            user_indexes()
+            vendor_indexes()
         except Exception:
             pass
 
