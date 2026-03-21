@@ -51,6 +51,9 @@ def create_app(config_class=Config):
         return render_template('errors/500.html'), 500
 
     with app.app_context():
-        ensure_indexes()
+        try:
+            ensure_indexes()
+        except Exception:
+            pass
 
     return app
